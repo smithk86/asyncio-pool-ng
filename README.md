@@ -3,7 +3,7 @@
 [![PyPI version](https://img.shields.io/pypi/v/asyncio-pool-ng)](https://pypi.org/project/asyncio-pool-ng/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/asyncio-pool-ng)](https://pypi.org/project/asyncio-pool-ng/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![](https://github.com/smithk86/asyncio-pool-ng/workflows/test-all/badge.svg)](https://github.com/smithk86/asyncio-pool-ng/actions?query=workflow%3Apytest)
+[![](https://github.com/smithk86/asyncio-pool-ng/workflows/ci/badge.svg)](https://github.com/smithk86/asyncio-pool-ng/actions?query=workflow%3Aci)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 ## About
