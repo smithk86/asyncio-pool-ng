@@ -1,7 +1,7 @@
 [tool]
 [tool.poetry]
 name = "asyncio-pool-ng"
-version = "0.7.1.dev"
+version = "0.7.1"
 description = "A pool of coroutine functions."
 authors = ["Kyle Smith <smithk86@smc3.com>"]
 license = "MIT"
