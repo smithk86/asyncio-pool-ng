@@ -1,0 +1,78 @@
+[tool]
+[tool.poetry]
+name = "asyncio-pool-ng"
+version = "0.7.0.dev"
+description = "A pool of coroutine functions."
+authors = ["Kyle Smith <smithk86@smc3.com>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/smithk86/asyncio-pool-ng"
+repository = "https://github.com/smithk86/asyncio-pool-ng"
+documentation = "https://smithk86.github.io/asyncio-pool-ng"
+classifiers = [
+    "Intended Audience :: Developers",
+    "Framework :: AsyncIO",
+    "Topic :: Software Development :: Libraries :: Python Modules"
+]
+packages = [
+    { include = "asyncio_pool" }
+]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<4"
+anyio = ">=3.6"
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=7.0"
+pytest-asyncio = ">=0.20"
+mypy = "*"
+pytest-mypy = "*"
+black = "*"
+pre-commit = "*"
+
+[tool.poetry.scripts]
+pytest = "pytest:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+
+[tool.mypy]
+strict = "true"
+
+[tool.pytest.ini_options]
+addopts = "--mypy"
+
+[tool.pylint.MESSAGE_CONTROL]
+disable = [
+    "missing-module-docstring",
+    "invalid-name",
+]
+enable = "useless-suppression"
+
+[tool.pylint.REPORTS]
+reports = "no"
+
+[tool.pylint.FORMAT]
+max-line-length = "120"
+
+[tool.pylint.VARIABLES]
+ignored-argument-names = "args|kwargs|_|__"
+
+[tool.pylint.BASIC]
+no-docstring-rgx = "(__.*__|main|test.*|.*test|.*Test|^_.*)$"
+
+[tool.pycln]
+all = true
+
+[tool.pyright]
+include = ["__template__"]
+
+[tool.pydocstyle]
+add-ignore = "D100,D104,D105,D107"
+convention = "google"
+match_dir = "asyncio_pool"

@@ -1,0 +1,6 @@
+[flake8]
+max-line-length = 120
+max-complexity = 12
+ignore = TC001,TC003
+per-file-ignores =
+    tests/*:SCS108
