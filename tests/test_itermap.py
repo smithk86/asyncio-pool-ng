@@ -1,6 +1,6 @@
 import pytest
 
-from asyncio_pool import AsyncioPool, AsyncioPoolWorker
+from asyncio_pool import AsyncioPool, AsyncioPoolMapWorkerType
 
 from .utils import exception_worker, worker_ids, workers
 
@@ -8,7 +8,7 @@ pytestmark = [pytest.mark.asyncio]
 
 
 @pytest.mark.parametrize("worker", workers, ids=worker_ids)
-async def test_itermap(worker: AsyncioPoolWorker[int]) -> None:
+async def test_itermap(worker: AsyncioPoolMapWorkerType[int, int]) -> None:
     async with AsyncioPool(1000) as pool:
         results: list[int] = []
         errors: list[BaseException] = []

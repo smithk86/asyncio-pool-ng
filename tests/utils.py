@@ -3,7 +3,7 @@ from contextlib import contextmanager
 from time import perf_counter
 from typing import Callable, Generator
 
-from asyncio_pool import AsyncioPoolWorker
+from asyncio_pool import AsyncioPoolWorkerType
 
 
 @contextmanager
@@ -28,7 +28,7 @@ async def worker_return_str(n: int) -> str:
     return str(n)
 
 
-workers: list[AsyncioPoolWorker[int]] = [worker_return_int1, worker_return_int2]
+workers: list[AsyncioPoolWorkerType[int]] = [worker_return_int1, worker_return_int2]
 worker_ids: list[str] = ["worker1", "worker2"]
 
 

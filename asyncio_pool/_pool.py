@@ -4,14 +4,15 @@ from types import TracebackType
 from typing import Any, AsyncGenerator, Callable, Coroutine, Iterable, Type, TypeVar
 
 from ._anyio import TaskGroup
-from ._typing import AsyncioPoolWorker
+from ._typing import AsyncioPoolMapWorkerType, AsyncioPoolWorkerType
 
 T = TypeVar("T")
+R = TypeVar("R")
 CancelledError = asyncio.CancelledError
 
 
 def _spawn_func_wrapper(
-    future: Future[T], func: AsyncioPoolWorker[T], *args: Any, **kwargs: Any
+    future: Future[R], func: AsyncioPoolWorkerType[R], *args: Any, **kwargs: Any
 ) -> Callable[[], Coroutine[Any, Any, None]]:
     async def _wrapper() -> None:
         try:
@@ -127,12 +128,12 @@ class AsyncioPool:
 
     async def _spawn_to_pool(
         self,
-        func: AsyncioPoolWorker[T],
+        func: AsyncioPoolWorkerType[R],
         *args: Any,
         name: object = None,
-        future: Future[T] | None = None,
+        future: Future[R] | None = None,
         **kwargs: Any,
-    ) -> Future[T]:
+    ) -> Future[R]:
         """Schedules the callable, _func_, to be executed as `func(*args, **kwargs)`.
 
         This method returns a future which represents the
@@ -156,11 +157,11 @@ class AsyncioPool:
 
     def spawn(
         self,
-        func: AsyncioPoolWorker[T],
+        func: AsyncioPoolWorkerType[R],
         *args: Any,
         name: str | None = None,
         **kwargs: Any,
-    ) -> Future[T]:
+    ) -> Future[R]:
         """Schedules the callable, _func_, to be executed as `func(*args, **kwargs)`.
 
         This method immediately returns a future which represents the execution of the callable.
@@ -180,7 +181,7 @@ class AsyncioPool:
             )
 
         # create future which will store the results once the task is done
-        future: Future[T] = Future()
+        future: Future[R] = Future()
         self._pending.add(future)
         future.add_done_callback(self._remove_from_pending_callback)
 
@@ -199,10 +200,10 @@ class AsyncioPool:
 
     def map(
         self,
-        func: AsyncioPoolWorker[T],
+        func: AsyncioPoolMapWorkerType[T, R],
         iterable: Iterable[T],
         name: str | None = None,
-    ) -> set[Future[T]]:
+    ) -> set[Future[R]]:
         """Apply _func_ to every item of _iterable_.
 
         Args:
@@ -222,11 +223,11 @@ class AsyncioPool:
 
     async def itermap(
         self,
-        func: AsyncioPoolWorker[T],
+        func: AsyncioPoolMapWorkerType[T, R],
         iterable: Iterable[T],
         name: str | None = None,
         batch_duration: int | float = 0.1,
-    ) -> AsyncGenerator[Future[T], None]:
+    ) -> AsyncGenerator[Future[R], None]:
         """Generate a future for _func_ for every item of _iterable_.
 
         Futures are yielded as they completed.
