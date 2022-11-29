@@ -6,10 +6,11 @@ from asyncio_pool import AsyncioPool, AsyncioPoolWorker
 
 from .utils import (
     exception_worker,
-    worker_1,
     worker_args,
     worker_ids,
     worker_long,
+    worker_return_int1,
+    worker_return_str,
     workers,
 )
 
@@ -17,11 +18,18 @@ pytestmark = [pytest.mark.asyncio]
 
 
 @pytest.mark.parametrize("worker", workers, ids=worker_ids)
-async def test_spawn(worker: AsyncioPoolWorker[int]) -> None:
+async def test_spawn_return_int(worker: AsyncioPoolWorker[int]) -> None:
     async with AsyncioPool(1000) as pool:
         future = pool.spawn(worker, 5)
         test = await future
         assert test == 5
+
+
+async def test_spawn_return_str() -> None:
+    async with AsyncioPool(1000) as pool:
+        future = pool.spawn(worker_return_str, 5)
+        test = await future
+        assert test == "5"
 
 
 async def test_spawn_task_name() -> None:
@@ -74,10 +82,10 @@ async def test_spawn_task_name() -> None:
 async def test_spawn_with_kwargs() -> None:
     async with AsyncioPool(1000) as pool:
         result = await pool.spawn(worker_args, 5, "123")
-        assert result == (5, "123", 123, None)
+        assert result == (None, 123, "123", 5)
 
         result = await pool.spawn(worker_args, 1337, "test", kw1=1337, kw2="test")
-        assert result == (1337, "test", 1337, "test")
+        assert result == ("test", 1337, "test", 1337)
 
 
 @pytest.mark.parametrize("worker", workers, ids=worker_ids)
@@ -96,7 +104,7 @@ async def test_spawn_inactive() -> None:
     with pytest.raises(
         RuntimeError, match="This task pool is not active; no new tasks can be started."
     ):
-        pool.spawn(worker_1, 5)
+        pool.spawn(worker_return_int1, 5)
 
 
 async def test_spawn_with_exception() -> None:

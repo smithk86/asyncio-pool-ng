@@ -13,18 +13,23 @@ def timer() -> Generator[Callable[[], float], None, None]:
     t2 = perf_counter()
 
 
-async def worker_1(n: int) -> int:
+async def worker_return_int1(n: int) -> int:
     await asyncio.sleep(0)
     return n
 
 
-async def worker_2(n: int) -> int:
+async def worker_return_int2(n: int) -> int:
     await asyncio.sleep(0.001)
     return n
 
 
-workers: list[AsyncioPoolWorker[int]] = [worker_1, worker_2]
-worker_ids: list[str] = ["worker_1", "worker_2"]
+async def worker_return_str(n: int) -> str:
+    await asyncio.sleep(0)
+    return str(n)
+
+
+workers: list[AsyncioPoolWorker[int]] = [worker_return_int1, worker_return_int2]
+worker_ids: list[str] = ["worker1", "worker2"]
 
 
 async def worker_long(n: int) -> int:
@@ -34,9 +39,9 @@ async def worker_long(n: int) -> int:
 
 async def worker_args(
     n: int, s: str, kw1: int = 123, kw2: str | None = None
-) -> tuple[int, str, int, str | None]:
+) -> tuple[str | None, int, str, int]:
     await asyncio.sleep(0)
-    return (n, s, kw1, kw2)
+    return (kw2, kw1, s, n)
 
 
 async def exception_worker(_: int) -> int:
