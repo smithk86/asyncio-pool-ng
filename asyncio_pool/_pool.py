@@ -73,8 +73,7 @@ class AsyncioPool:
         exc_val: BaseException | None,
         exc_tb: TracebackType | None,
     ) -> bool | None:
-        while self._pending:
-            await asyncio.wait(self._pending, timeout=0.1)
+        await self.join()
         return await self._group.__aexit__(exc_type, exc_val, exc_tb)
 
     def __len__(self) -> int:
@@ -125,6 +124,11 @@ class AsyncioPool:
         return [
             x for x in group_tasks if x.get_name().startswith(f"{type(self).__name__}-")
         ]
+
+    async def join(self) -> None:
+        """Wait for all active tasks to complete."""
+        while self._pending:
+            await asyncio.wait(self._pending, timeout=0.1)
 
     async def _spawn_to_pool(
         self,
