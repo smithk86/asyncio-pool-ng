@@ -4,7 +4,7 @@ import pytest
 
 from asyncio_pool import AsyncioPool, AsyncioPoolMapWorkerType
 
-from .utils import exception_worker, worker_ids, workers
+from .utils import exception_worker, worker_ids, worker_long, workers
 
 pytestmark = [pytest.mark.asyncio]
 
@@ -52,3 +52,23 @@ async def test_map_with_exception() -> None:
 
     assert len(results) == 0
     assert len(errors) == 10000
+
+
+async def test_map_with_join() -> None:
+    results: list[int] = []
+    errors: list[BaseException] = []
+    async with AsyncioPool(10) as pool:
+        futures = pool.map(worker_long, range(20))
+
+        assert len(pool) == 20
+        await pool.join()
+        assert len(pool) == 0
+
+        for future in futures:
+            try:
+                results.append(future.result())
+            except BaseException as e:
+                errors.append(e)
+
+    assert len(results) == 20
+    assert len(errors) == 0
