@@ -1,14 +1,36 @@
 import asyncio
+import atexit
+import warnings
 from asyncio import Future, Task
+from collections.abc import AsyncGenerator, Callable, Coroutine, Iterable
 from contextlib import AsyncExitStack
-from typing import Any, AsyncGenerator, Callable, Coroutine, Iterable, TypeVar
+from typing import Any, TypeVar
 
 from ._anyio import TaskGroup
 from ._typing import AsyncioPoolMapWorkerType, AsyncioPoolWorkerType
 
+__all__ = ["AsyncioPool"]
+
+
 T = TypeVar("T")
 R = TypeVar("R")
 CancelledError = asyncio.CancelledError
+_background_tasks: set[Task[Any]] = {*()}
+
+
+def create_background_task(coro: Coroutine[T, Any, Any], name: str | None = None) -> Task[T]:
+    task = asyncio.create_task(coro, name=name)
+    _background_tasks.add(task)
+    task.add_done_callback(_background_tasks.discard)
+    return task
+
+
+def background_task_warning() -> None:
+    if len(_background_tasks) > 0:
+        warnings.warn("tasks are still running", stacklevel=1)
+
+
+atexit.register(background_task_warning)
 
 
 def _spawn_func_wrapper(
@@ -18,7 +40,7 @@ def _spawn_func_wrapper(
         try:
             result = await func(*args, **kwargs)
             future.set_result(result)
-        except BaseException as e:  # pylint: disable=broad-except
+        except BaseException as e:  # noqa: BLE001
             future.set_exception(e)
 
     return _wrapper
@@ -44,6 +66,7 @@ class AsyncioPool:
     _size: int
     _semaphore: asyncio.Semaphore
     _pending: set[Future[Any]]
+    _exit_stack: AsyncExitStack
 
     __slots__ = (
         "_group",
@@ -53,8 +76,8 @@ class AsyncioPool:
         "_exit_stack",
     )
 
-    def __init__(self, size: int = 100):
-        """Initialize `AsyncioPool`.
+    def __init__(self, size: int = 100) -> None:
+        """Initialize ``AsyncioPool``.
 
         Args:
             size: Max number of coroutines which can run simultaneously.
@@ -115,12 +138,8 @@ class AsyncioPool:
         Returns:
             List of tasks
         """
-        group_tasks = (
-            self._group.cancel_scope._tasks  # pylint: disable=protected-access
-        )
-        return [
-            x for x in group_tasks if x.get_name().startswith(f"{type(self).__name__}-")
-        ]
+        group_tasks = self._group.cancel_scope._tasks  # pylint: disable=protected-access
+        return [x for x in group_tasks if x.get_name().startswith(f"{type(self).__name__}-")]
 
     async def join(self) -> None:
         """Wait for all active tasks to complete."""
@@ -144,6 +163,7 @@ class AsyncioPool:
             func: Function created with [async def](https://docs.python.org/3/reference/compound_stmts.html#async-def)
             *args: Positional arguments for _func_
             name: Optional name for the `asyncio.Task`
+            future: Optional future object to be passed to `_spawn_func_wrapper`
             **kwargs: Keyword aarguments for _func_
 
         Returns:
@@ -177,22 +197,17 @@ class AsyncioPool:
             Future which will eventually contain the results of _func_.
         """
         if not self._active:
-            raise RuntimeError(
-                "This task pool is not active; no new tasks can be started."
-            )
+            raise RuntimeError("This task pool is not active; no new tasks can be started.")
 
         # create future which will store the results once the task is done
         future: Future[R] = Future()
         self._pending.add(future)
         future.add_done_callback(self._remove_from_pending_callback)
 
-        if name:
-            name = _make_name(type(self).__name__, name)
-        else:
-            name = _make_name(type(self).__name__, str(func.__name__))
+        name = _make_name(type(self).__name__, name) if name else _make_name(type(self).__name__, str(func.__name__))
 
         # create task to wait/execute `func`
-        asyncio.create_task(
+        create_background_task(
             self._spawn_to_pool(func, *args, name=name, future=future, **kwargs),
             name=f"{type(self).__name__}-__spawn__",
         )
@@ -217,10 +232,7 @@ class AsyncioPool:
         """
         name = name if name else f"map({func.__name__})"
 
-        return {
-            self.spawn(func, item, name=f"{name}[{i}]")
-            for i, item in enumerate(iterable)
-        }
+        return {self.spawn(func, item, name=f"{name}[{i}]") for i, item in enumerate(iterable)}
 
     async def itermap(
         self,

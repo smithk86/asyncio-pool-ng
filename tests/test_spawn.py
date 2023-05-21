@@ -66,9 +66,7 @@ async def test_spawn_task_name() -> None:
         # final task is running
         assert len(pool) == 1
         assert len(pool.running_tasks()) == 1
-        assert [t.get_name() for t in pool.running_tasks()] == [
-            "AsyncioPool-worker_long"
-        ]
+        assert [t.get_name() for t in pool.running_tasks()] == ["AsyncioPool-worker_long"]
 
         # validate the return value for the first task
         test = await future
@@ -103,9 +101,7 @@ async def test_spawn_inactive() -> None:
     async with AsyncioPool(1000) as pool:
         pass
 
-    with pytest.raises(
-        RuntimeError, match="This task pool is not active; no new tasks can be started."
-    ):
+    with pytest.raises(RuntimeError, match="This task pool is not active; no new tasks can be started."):
         pool.spawn(worker_return_int1, 5)
 
 

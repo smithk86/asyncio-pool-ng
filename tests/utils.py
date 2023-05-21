@@ -1,7 +1,7 @@
 import asyncio
+from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from time import perf_counter
-from typing import Callable, Generator
 
 from asyncio_pool import AsyncioPoolWorkerType
 
@@ -37,9 +37,7 @@ async def worker_long(n: int) -> int:
     return n
 
 
-async def worker_args(
-    n: int, s: str, kw1: int = 123, kw2: str | None = None
-) -> tuple[str | None, int, str, int]:
+async def worker_args(n: int, s: str, kw1: int = 123, kw2: str | None = None) -> tuple[str | None, int, str, int]:
     await asyncio.sleep(0)
     return (kw2, kw1, s, n)
 
