@@ -1,7 +1,7 @@
 import asyncio
 from asyncio import Future, Task
-from types import TracebackType
-from typing import Any, AsyncGenerator, Callable, Coroutine, Iterable, Type, TypeVar
+from contextlib import AsyncExitStack
+from typing import Any, AsyncGenerator, Callable, Coroutine, Iterable, TypeVar
 
 from ._anyio import TaskGroup
 from ._typing import AsyncioPoolMapWorkerType, AsyncioPoolWorkerType
@@ -50,6 +50,7 @@ class AsyncioPool:
         "_size",
         "_semaphore",
         "_pending",
+        "_exit_stack",
     )
 
     def __init__(self, size: int = 100):
@@ -62,19 +63,15 @@ class AsyncioPool:
         self._size = size
         self._semaphore = asyncio.Semaphore(size)
         self._pending = {*()}
+        self._exit_stack = AsyncExitStack()
 
     async def __aenter__(self) -> "AsyncioPool":
-        await self._group.__aenter__()
+        await self._exit_stack.enter_async_context(self._group)
         return self
 
-    async def __aexit__(
-        self,
-        exc_type: Type[BaseException] | None,
-        exc_val: BaseException | None,
-        exc_tb: TracebackType | None,
-    ) -> bool | None:
+    async def __aexit__(self, *_: Any) -> None:
         await self.join()
-        return await self._group.__aexit__(exc_type, exc_val, exc_tb)
+        await self._exit_stack.aclose()
 
     def __len__(self) -> int:
         """Count of all pending work still in the pool.
