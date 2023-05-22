@@ -115,3 +115,4 @@ convention = "google"
 
 [tool.ruff.per-file-ignores]
 "tests/**/*.*" = ["BLE001", "S101"]
+"tests/loadtest.py" = ["T201"]
