@@ -47,6 +47,8 @@ async def test_spawn_task_name() -> None:
         pool.spawn(worker_long, 0)
         pool.spawn(worker_long, 0)
 
+        await asyncio.sleep(0.1)
+
         # pool is full
         assert pool.is_empty is False
         assert pool.is_full is True
@@ -55,8 +57,8 @@ async def test_spawn_task_name() -> None:
 
         # 2 running tasks; task 3 is pending
         assert len(pool) == 3
-        assert len(pool.running_tasks()) == 2
-        assert [t.get_name() for t in pool.running_tasks()] == [
+        assert len(pool._tasks) == 2
+        assert [t.get_name() for t in pool._tasks] == [
             "AsyncioPool-worker_long",
             "AsyncioPool-worker_long",
         ]
@@ -65,8 +67,8 @@ async def test_spawn_task_name() -> None:
 
         # final task is running
         assert len(pool) == 1
-        assert len(pool.running_tasks()) == 1
-        assert [t.get_name() for t in pool.running_tasks()] == ["AsyncioPool-worker_long"]
+        assert len(pool._tasks) == 1
+        assert [t.get_name() for t in pool._tasks] == ["AsyncioPool-worker_long"]
 
         # validate the return value for the first task
         test = await future

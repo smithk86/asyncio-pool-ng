@@ -29,7 +29,7 @@ async def test_itermap_with_exception() -> None:
         async for future in pool.itermap(exception_worker, range(10000), batch_duration=0.1):
             try:
                 results.append(future.result())
-            except BaseException as e:
+            except Exception as e:
                 errors.append(e)
 
         assert len(results) == 0

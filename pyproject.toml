@@ -27,8 +27,7 @@ classifiers = [
 packages = [{ include = "asyncio_pool" }]
 
 [tool.poetry.dependencies]
-python = ">=3.10,<4"
-anyio = ">=3.6"
+python = ">=3.11,<4"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=7.0"
@@ -106,7 +105,7 @@ ignore = [
     "UP037", # pyupgrade - removes quotes from type annotation
 ]
 line-length = 120 # match Black
-target-version = 'py310'
+target-version = 'py311'
 
 [tool.ruff.mccabe]
 max-complexity = 12
