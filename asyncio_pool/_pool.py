@@ -41,13 +41,15 @@ def _make_name(*names: Any) -> str:
 class AsyncioPool:
     """A pool of coroutine functions.
 
-    `AsyncioPool` utilizes [anyio](https://anyio.readthedocs.io/en/stable/)'s
-    [TaskGroup](https://anyio.readthedocs.io/en/stable/tasks.html) to manage the
-    lifecycle of each function but adds the ability to limit how many run concurrently.
+    `AsyncioPool` utilizes an [asyncio.TaskGroup](https://docs.python.org/3/library/asyncio-task.html#task-groups)
+    to manage the lifecycle of each async function but adds the ability to limit how many run concurrently.
 
-    For each function, a [Future](https://docs.python.org/3/library/asyncio-future.html#asyncio.Future) is returned.
-    This `Future` will hold the result of the function that was executed. Any exceptions raised inside the
+    For each async function, a [Future](https://docs.python.org/3/library/asyncio-future.html#asyncio.Future) is returned.
+    This `Future` will eventually hold the result of the function that was executed. Any exceptions raised inside the
     function are hidden from the `TaskGroup` and held within the `Future`.
+
+    `AsyncioPool` is fully typed and passes checks with [mypy](https://www.mypy-lang.org/)'s
+    [strict mode](https://mypy.readthedocs.io/en/stable/getting_started.html?highlight=strict#strict-mode-and-configuration).
     """
 
     _group: TaskGroup
@@ -85,16 +87,10 @@ class AsyncioPool:
         return self
 
     async def __aexit__(self, *_: Any) -> None:
-        """Wait for all active tasks to complete."""
         await self.join()
         await self._exit_stack.aclose()
 
     def __len__(self) -> int:
-        """Count of all pending work still in the pool.
-
-        Returns:
-            Size of the pool.
-        """
         return len(self._pending)
 
     @property

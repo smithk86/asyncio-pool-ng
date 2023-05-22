@@ -35,6 +35,11 @@ pytest-asyncio = ">=0.20"
 mypy = "*"
 pytest-mypy = "*"
 
+[tool.poetry.group.docs.dependencies]
+mkdocs = "*"
+mkdocs-material = "*"
+mkdocstrings = { version = "*", extras = ["python"] }
+
 [tool.poetry.group.code.dependencies]
 black = "*"
 pre-commit = "*"

@@ -8,7 +8,7 @@
 
 ## About
 
-**AsyncioPoolNG** takes the ideas used in [asyncio-pool](https://github.com/gistart/asyncio-pool) and wraps them around a [TaskGroup](https://anyio.readthedocs.io/en/stable/tasks.html) from [anyio](https://anyio.readthedocs.io/en/stable/index.html).
+**AsyncioPoolNG** takes the ideas used in [asyncio-pool](https://github.com/gistart/asyncio-pool) and wraps them around an [asyncio.TaskGroup](https://docs.python.org/3/library/asyncio-task.html#task-groups).
 
 `AsyncioPool` has three main functions `spawn`, `map`, and `itermap`.
 
