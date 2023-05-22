@@ -1,7 +1,17 @@
-[tool]
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 120
+
+[tool.mypy]
+strict = true
+packages = ["asyncio_pool", "tests"]
+
 [tool.poetry]
 name = "asyncio-pool-ng"
-version = "0.7.2"
+version = "0.8.0"
 description = "A pool of coroutine functions."
 authors = ["Kyle Smith <smithk86@smc3.com>"]
 license = "MIT"
@@ -12,67 +22,102 @@ documentation = "https://smithk86.github.io/asyncio-pool-ng"
 classifiers = [
     "Intended Audience :: Developers",
     "Framework :: AsyncIO",
-    "Topic :: Software Development :: Libraries :: Python Modules"
+    "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-packages = [
-    { include = "asyncio_pool" }
-]
+packages = [{ include = "asyncio_pool" }]
 
 [tool.poetry.dependencies]
-python = ">=3.10,<4"
-anyio = ">=3.6"
+python = ">=3.11,<4"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=7.0"
 pytest-asyncio = ">=0.20"
 mypy = "*"
 pytest-mypy = "*"
+
+[tool.poetry.group.docs.dependencies]
+mkdocs = "*"
+mkdocs-material = "*"
+mkdocstrings = { version = "*", extras = ["python"] }
+
+[tool.poetry.group.code.dependencies]
 black = "*"
 pre-commit = "*"
 
 [tool.poetry.scripts]
 pytest = "pytest:main"
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-
-[tool.isort]
-profile = "black"
-multi_line_output = 3
-
-[tool.mypy]
-strict = "true"
-
 [tool.pytest.ini_options]
 addopts = "--mypy"
+testpaths = ["tests"]
 
-[tool.pylint.MESSAGE_CONTROL]
-disable = [
-    "missing-module-docstring",
-    "invalid-name",
+[tool.slotscheck]
+strict-imports = false
+
+[tool.ruff]
+select = [
+    "A",   # flake8-builtins
+    "B",   # flake8-bugbear
+    "BLE", # flake8-blind-except
+    "C4",  # flake8-comprehensions
+    "C90", # mccabe
+    "D",   # pydocstyle
+    "DJ",  # flake8-django
+    "DTZ", # flake8-datetimez
+    "E",   # pycodestyle errors
+    "ERA", # eradicate
+    "EXE", # flake8-executable
+    "F",   # pyflakes
+    "G",   # flake8-logging-format
+    "I",   # isort
+    "ICN", # flake8-import-conventions
+    "ISC", # flake8-implicit-str-concat
+    "N",   # pep8-naming
+    "PIE", # flake8-pie
+    "PLC", # pylint - convention
+    "PLE", # pylint - error
+    "PLW", # pylint - warning
+    "PTH", # flake8-use-pathlib
+    "Q",   # flake8-quotes
+    "RET", # flake8-return
+    "RUF", # Ruff-specific rules
+    "S",   # flake8-bandit
+    "SIM", # flake8-simplify
+    "T10", # flake8-debugger
+    "T20", # flake8-print
+    "TCH", # flake8-type-checking
+    "TID", # flake8-tidy-imports
+    "UP",  # pyupgrade
+    "W",   # pycodestyle - warning
+    "YTT", # flake8-2020
 ]
-enable = "useless-suppression"
+exclude = ["__pycache__", "venv", ".venv"]
+ignore = [
+    "A003",  # flake8-builtins - class attribute {name} is shadowing a python builtin
+    "B010",  # flake8-bugbear - do not call setattr with a constant attribute value
+    "D100",  # pydocstyle - missing docstring in public module
+    "D101",  # pydocstyle - missing docstring in public class
+    "D102",  # pydocstyle - missing docstring in public method
+    "D103",  # pydocstyle - missing docstring in public function
+    "D104",  # pydocstyle - missing docstring in public package
+    "D105",  # pydocstyle - missing docstring in magic method
+    "D106",  # pydocstyle - missing docstring in public nested class
+    "D107",  # pydocstyle - missing docstring in __init__
+    "D202",  # pydocstyle - no blank lines allowed after function docstring
+    "D205",  # pydocstyle - 1 blank line required between summary line and description
+    "D415",  # pydocstyle - first line should end with a period, question mark, or exclamation point
+    "E501",  # pycodestyle line too long, handled by black
+    "UP037", # pyupgrade - removes quotes from type annotation
+]
+line-length = 120 # match Black
+target-version = 'py311'
 
-[tool.pylint.REPORTS]
-reports = "no"
+[tool.ruff.mccabe]
+max-complexity = 12
 
-[tool.pylint.FORMAT]
-max-line-length = "120"
-
-[tool.pylint.VARIABLES]
-ignored-argument-names = "args|kwargs|_|__"
-
-[tool.pylint.BASIC]
-no-docstring-rgx = "(__.*__|main|test.*|.*test|.*Test|^_.*)$"
-
-[tool.pycln]
-all = true
-
-[tool.pyright]
-include = ["__template__"]
-
-[tool.pydocstyle]
-add-ignore = "D100,D104,D105,D107"
+[tool.ruff.pydocstyle]
 convention = "google"
-match_dir = "asyncio_pool"
+
+[tool.ruff.per-file-ignores]
+"tests/**/*.*" = ["BLE001", "S101"]
+"tests/loadtest.py" = ["T201"]
