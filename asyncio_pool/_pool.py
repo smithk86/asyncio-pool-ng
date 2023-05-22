@@ -230,7 +230,7 @@ class AsyncioPool:
         iterable: Iterable[T],
         name: str | None = None,
         context: Context | None = None,
-        batch_duration: int | float = 0.1,
+        batch_duration: int | float = 1.0,
     ) -> AsyncGenerator[Future[R], None]:
         """Generate a future for _func_ for every item of _iterable_.
 
