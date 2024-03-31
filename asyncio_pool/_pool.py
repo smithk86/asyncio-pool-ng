@@ -117,7 +117,7 @@ class AsyncioPool:
 
     @property
     def _tasks(self) -> set[Task[T]]:
-        return cast(set[Task[T]], self._group._tasks)  # type: ignore[attr-defined]
+        return cast(set[Task[T]], self._group._tasks)
 
     @asynccontextmanager
     async def _consumer(self) -> AsyncGenerator[Task[None], None]:
