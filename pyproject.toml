@@ -24,7 +24,7 @@ name = "asyncio-pool-ng"
 packages = [{ include = "asyncio_pool" }]
 readme = "README.md"
 repository = "https://github.com/smithk86/asyncio-pool-ng"
-version = "0.8.0"
+version = "0.8.1"
 
 [tool.poetry.dependencies]
 python = ">=3.11,<4"
