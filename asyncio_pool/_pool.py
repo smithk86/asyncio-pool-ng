@@ -227,13 +227,6 @@ class AsyncioPool:
         context: Context | None = None,
         batch_duration: int | float = 1.0,
     ) -> AsyncGenerator[Future[R], None]:
-        async def async_iterable_handler(_iterable: AsyncIterable[T]) -> None:
-            i = 0
-            async for item in _iterable:
-                pending.add(self.spawn(func, item, name=f"{name}[{i}]", context=context))
-                startup_event.set()
-                i += 1
-
         """Generate a future for _func_ for every item of _iterable_.
 
         Futures are yielded as they completed.
@@ -250,6 +243,14 @@ class AsyncioPool:
         Returns:
             Async generator of futures.
         """
+
+        async def async_iterable_handler(_iterable: AsyncIterable[T]) -> None:
+            i = 0
+            async for item in _iterable:
+                pending.add(self.spawn(func, item, name=f"{name}[{i}]", context=context))
+                startup_event.set()
+                i += 1
+
         name = name if name else f"itermap({func.__name__})"
         pending: set[Future[R]] = set()
         if isinstance(iterable, AsyncIterable):
