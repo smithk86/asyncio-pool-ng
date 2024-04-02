@@ -3,7 +3,7 @@ default_language_version:
 exclude: ^(poetry.lock)
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v4.5.0
     hooks:
       - id: check-ast
       - id: check-case-conflict
@@ -13,39 +13,35 @@ repos:
       - id: mixed-line-ending
       - id: trailing-whitespace
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: "v0.0.269"
+    rev: "v0.3.4"
     hooks:
       - id: ruff
         args: ["--fix"]
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.4
+    rev: v2.2.6
     hooks:
       - id: codespell
   - repo: https://github.com/psf/black
-    rev: 23.3.0
+    rev: 24.3.0
     hooks:
       - id: black
         args: [--config=./pyproject.toml]
   - repo: https://github.com/asottile/blacken-docs
-    rev: 1.13.0
+    rev: 1.16.0
     hooks:
       - id: blacken-docs
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: "v3.0.0-alpha.9-for-vscode"
-    hooks:
-      - id: prettier
   - repo: https://github.com/python-formate/flake8-dunder-all
-    rev: v0.3.0
+    rev: v0.4.0
     hooks:
       - id: ensure-dunder-all
         exclude: "test*"
   - repo: https://github.com/ariebovenberg/slotscheck
-    rev: v0.16.5
+    rev: v0.19.0
     hooks:
       - id: slotscheck
         exclude: "test_*|docs"
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: "v1.3.0"
+    rev: "v1.9.0"
     hooks:
       - id: mypy
         additional_dependencies: ["pytest"]

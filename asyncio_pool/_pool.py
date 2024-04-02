@@ -1,6 +1,6 @@
-from asyncio import Future, Queue, Semaphore, Task, TaskGroup, create_task, sleep, wait
+from asyncio import Event, Future, Queue, Semaphore, Task, TaskGroup, create_task, sleep, wait
 from asyncio.queues import QueueEmpty
-from collections.abc import AsyncGenerator, Coroutine, Iterable
+from collections.abc import AsyncGenerator, AsyncIterable, Coroutine, Iterable
 from contextlib import AsyncExitStack, asynccontextmanager
 from contextvars import Context
 from dataclasses import dataclass
@@ -117,14 +117,14 @@ class AsyncioPool:
 
     @property
     def _tasks(self) -> set[Task[T]]:
-        return cast(set[Task[T]], self._group._tasks)  # type: ignore[attr-defined]
+        return cast(set[Task[T]], self._group._tasks)
 
     @asynccontextmanager
     async def _consumer(self) -> AsyncGenerator[Task[None], None]:
         def release(_: Task[T]) -> None:
             self._semaphore.release()
 
-        async def loop() -> None:
+        async def handler() -> None:
             while not self._exiting or len(self._pending) > 0:
                 try:
                     future, pending_task = self._queue.get_nowait()
@@ -137,7 +137,7 @@ class AsyncioPool:
                 task = self._group.create_task(coro, name=pending_task.name, context=pending_task.context)
                 task.add_done_callback(release)
 
-        task = create_task(loop(), name="AsyncioPool-consumer")
+        task = create_task(handler(), name="AsyncioPool-consumer")
         yield task
         await task
 
@@ -217,13 +217,12 @@ class AsyncioPool:
             Set of futures which will eventually contain the results of each _func_.
         """
         name = name if name else f"map({func.__name__})"
-
         return {self.spawn(func, item, name=f"{name}[{i}]", context=context) for i, item in enumerate(iterable)}
 
     async def itermap(
         self,
         func: AsyncioPoolMapWorkerType[T, R],
-        iterable: Iterable[T],
+        iterable: Iterable[T] | AsyncIterable[T],
         name: str | None = None,
         context: Context | None = None,
         batch_duration: int | float = 1.0,
@@ -234,7 +233,7 @@ class AsyncioPool:
 
         Args:
             func: Function created with [async def](https://docs.python.org/3/reference/compound_stmts.html#async-def)
-            iterable: Iterable instance which produces values for _func_
+            iterable: Instance of Iterable or AsyncIterabl which produces values for _func_
             name: Optional name for the `asyncio.Task`
             context: Optional context argument allows specifying a custom
                 [contextvars.Context](https://docs.python.org/3/library/contextvars.html#contextvars.Context)
@@ -244,10 +243,29 @@ class AsyncioPool:
         Returns:
             Async generator of futures.
         """
-        name = name if name else f"itermap({func.__name__})"
 
-        pending = self.map(func, iterable, name=name, context=context)
-        while pending:
-            done, pending = await wait(pending, timeout=batch_duration)
-            for future in done:
-                yield future
+        async def async_iterable_handler(_iterable: AsyncIterable[T]) -> None:
+            i = 0
+            async for item in _iterable:
+                pending.add(self.spawn(func, item, name=f"{name}[{i}]", context=context))
+                startup_event.set()
+                i += 1
+
+        name = name if name else f"itermap({func.__name__})"
+        pending: set[Future[R]] = set()
+        if isinstance(iterable, AsyncIterable):
+            startup_event = Event()
+            task = create_task(async_iterable_handler(iterable), name="AsyncioPool-amap")
+            await startup_event.wait()
+            while not task.done() or pending:
+                while pending:
+                    done, _ = await wait(pending, timeout=batch_duration)
+                    for future in done:
+                        yield future
+                        pending.discard(future)
+        else:
+            pending = self.map(func, iterable, name=name, context=context)
+            while pending:
+                done, pending = await wait(pending, timeout=batch_duration)
+                for future in done:
+                    yield future

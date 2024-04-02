@@ -1,9 +1,14 @@
 import asyncio
-from collections.abc import Callable, Generator
+from collections.abc import AsyncIterator, Callable, Generator
 from contextlib import contextmanager
 from time import perf_counter
 
 from asyncio_pool import AsyncioPoolWorkerType
+
+
+async def arange(value: int) -> AsyncIterator[int]:
+    for i in range(value):
+        yield i
 
 
 @contextmanager
