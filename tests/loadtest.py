@@ -75,7 +75,7 @@ if __name__ == "__main__":
 
     if args.method in methods:
         m = methods[args.method](args.tasks, args.pool_size, args.task_duration)
-        asyncio.get_event_loop().run_until_complete(m)
+        asyncio.run(m)
         exec_time = time.perf_counter() - ts_start
         print_stats(args, exec_time)
     else:
