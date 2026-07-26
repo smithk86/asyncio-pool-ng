@@ -2,9 +2,10 @@ import asyncio
 
 import pytest
 
-from asyncio_pool import AsyncioPool, AsyncioPoolWorkerType
+from asyncio_pool import AsyncioPool
 
 from .utils import (
+    WorkerHandler,
     exception_worker,
     worker_args,
     worker_ids,
@@ -18,7 +19,7 @@ pytestmark = [pytest.mark.asyncio]
 
 
 @pytest.mark.parametrize("worker", workers, ids=worker_ids)
-async def test_spawn_return_int(worker: AsyncioPoolWorkerType[int]) -> None:
+async def test_spawn_return_int(worker: WorkerHandler) -> None:
     async with AsyncioPool(1000) as pool:
         future = pool.spawn(worker, 5)
         test = await future
@@ -89,9 +90,7 @@ async def test_spawn_with_kwargs() -> None:
 
 
 @pytest.mark.parametrize("worker", workers, ids=worker_ids)
-async def test_spawn_exit_with_active_tasks(
-    worker: AsyncioPoolWorkerType[int],
-) -> None:
+async def test_spawn_exit_with_active_tasks(worker: WorkerHandler) -> None:
     async with AsyncioPool(1000) as pool:
         future = pool.spawn(worker, 5)
         assert future.done() is False
@@ -103,7 +102,7 @@ async def test_spawn_inactive() -> None:
     async with AsyncioPool(1000) as pool:
         pass
 
-    with pytest.raises(RuntimeError, match="This task pool is not active; no new tasks can be started."):
+    with pytest.raises(RuntimeError, match=r"This task pool is not active; no new tasks can be started."):
         pool.spawn(worker_return_int1, 5)
 
 

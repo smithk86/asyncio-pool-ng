@@ -68,17 +68,14 @@ if __name__ == "__main__":
     p.add_argument("--pool-size", "-p", type=int, default=10**3)
     args = p.parse_args()
 
-    print(
-        ">>> Running %d tasks in pool of size=%s, each task takes %.3f sec."
-        % (args.tasks, args.pool_size, args.task_duration)
-    )
-    print(">>> This will run more than %.5f seconds" % (args.task_duration * (args.tasks / args.pool_size)))
+    print(f">>> Running {args.tasks} tasks in pool of size={args.pool_size}, each task takes {args.task_duration} sec.")
+    print(f">>> This will run more than {args.task_duration * (args.tasks / args.pool_size)} seconds")
 
     ts_start = time.perf_counter()
 
     if args.method in methods:
         m = methods[args.method](args.tasks, args.pool_size, args.task_duration)
-        asyncio.get_event_loop().run_until_complete(m)
+        asyncio.run(m)
         exec_time = time.perf_counter() - ts_start
         print_stats(args, exec_time)
     else:

@@ -2,18 +2,28 @@ site_name: Asyncio Pool NG
 repo_url: https://github.com/smithk86/asyncio-pool-ng
 repo_name: smithk86/asyncio-pool-ng
 site_url: https://smithk86.github.io/asyncio-pool-ng
-theme:
-  name: material
-  palette:
-    - media: "(prefers-color-scheme: dark)"
 nav:
   - "index.md"
+theme:
+  palette:
+    # light mode
+    - scheme: default
+      primary: indigo
+      accent: deep orange
+      toggle:
+        icon: lucide/sun
+        name: Switch to dark mode
+    # dark mode
+    - scheme: slate
+      primary: indigo
+      accent: orange
+      toggle:
+        icon: lucide/moon
+        name: Switch to light mode
 plugins:
   - mkdocstrings:
       handlers:
         python:
-          import:
-            - https://docs.python.org/3/objects.inv
           options:
             show_source: false
             docstring_style: google
