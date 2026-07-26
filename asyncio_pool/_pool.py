@@ -60,12 +60,12 @@ class AsyncioPool:
     _exit_stack: AsyncExitStack
 
     __slots__ = (
-        "_group",
-        "_size",
-        "_semaphore",
-        "_queue",
-        "_pending",
         "_exit_stack",
+        "_group",
+        "_pending",
+        "_queue",
+        "_semaphore",
+        "_size",
     )
 
     def __init__(self, size: int = 100) -> None:
@@ -113,11 +113,11 @@ class AsyncioPool:
 
     @property
     def _exiting(self) -> bool:
-        return cast(bool, self._group._exiting)  # type: ignore[attr-defined]
+        return cast("bool", self._group._exiting)  # type: ignore[attr-defined]
 
     @property
     def _tasks(self) -> set[Task[T]]:
-        return cast(set[Task[T]], self._group._tasks)
+        return cast("set[Task[T]]", self._group._tasks)
 
     @asynccontextmanager
     async def _consumer(self) -> AsyncGenerator[Task[None], None]:

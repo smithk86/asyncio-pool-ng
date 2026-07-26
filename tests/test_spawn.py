@@ -103,7 +103,7 @@ async def test_spawn_inactive() -> None:
     async with AsyncioPool(1000) as pool:
         pass
 
-    with pytest.raises(RuntimeError, match="This task pool is not active; no new tasks can be started."):
+    with pytest.raises(RuntimeError, match=r"This task pool is not active; no new tasks can be started."):
         pool.spawn(worker_return_int1, 5)
 
 
