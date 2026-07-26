@@ -1,23 +1,17 @@
 from asyncio import Event, Future, Queue, Semaphore, Task, TaskGroup, create_task, sleep, wait
 from asyncio.queues import QueueEmpty
-from collections.abc import AsyncGenerator, AsyncIterable, Coroutine, Iterable
+from collections.abc import AsyncGenerator, AsyncIterable, Awaitable, Callable, Coroutine, Iterable
 from contextlib import AsyncExitStack, asynccontextmanager
 from contextvars import Context
 from dataclasses import dataclass
-from typing import Any, Generic, TypeVar, cast
-
-from ._typing import AsyncioPoolMapWorkerType, AsyncioPoolWorkerType
+from typing import Any, cast
 
 __all__ = ["AsyncioPool"]
 
 
-T = TypeVar("T")
-R = TypeVar("R")
-
-
 @dataclass
-class PendingTask(Generic[R]):
-    func: AsyncioPoolWorkerType[R]
+class PendingTask[R]:
+    func: Callable[..., Awaitable[R]]
     args: tuple[Any, ...]
     kwargs: dict[str, Any]
     name: str | None = None
@@ -116,12 +110,12 @@ class AsyncioPool:
         return cast("bool", self._group._exiting)  # type: ignore[attr-defined]
 
     @property
-    def _tasks(self) -> set[Task[T]]:
+    def _tasks[T](self) -> set[Task[T]]:
         return cast("set[Task[T]]", self._group._tasks)
 
     @asynccontextmanager
     async def _consumer(self) -> AsyncGenerator[Task[None], None]:
-        def release(_: Task[T]) -> None:
+        def release(_: Task[Any]) -> None:
             self._semaphore.release()
 
         async def handler() -> None:
@@ -146,9 +140,9 @@ class AsyncioPool:
         while self._pending:
             await sleep(0)
 
-    def spawn(
+    def spawn[R](
         self,
-        func: AsyncioPoolWorkerType[R],
+        func: Callable[..., Awaitable[R]],
         *args: Any,
         name: str | None = None,
         context: Context | None = None,
@@ -196,9 +190,9 @@ class AsyncioPool:
 
         return future
 
-    def map(
+    def map[T, R](
         self,
-        func: AsyncioPoolMapWorkerType[T, R],
+        func: Callable[[T], Awaitable[R]],
         iterable: Iterable[T],
         name: str | None = None,
         context: Context | None = None,
@@ -219,9 +213,9 @@ class AsyncioPool:
         name = name if name else f"map({func.__name__})"
         return {self.spawn(func, item, name=f"{name}[{i}]", context=context) for i, item in enumerate(iterable)}
 
-    async def itermap(
+    async def itermap[T, R](
         self,
-        func: AsyncioPoolMapWorkerType[T, R],
+        func: Callable[[T], Awaitable[R]],
         iterable: Iterable[T] | AsyncIterable[T],
         name: str | None = None,
         context: Context | None = None,

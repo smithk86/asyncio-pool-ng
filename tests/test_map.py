@@ -2,15 +2,15 @@ import asyncio
 
 import pytest
 
-from asyncio_pool import AsyncioPool, AsyncioPoolMapWorkerType
+from asyncio_pool import AsyncioPool
 
-from .utils import exception_worker, worker_ids, worker_long, workers
+from .utils import WorkerHandler, exception_worker, worker_ids, worker_long, workers
 
 pytestmark = [pytest.mark.asyncio]
 
 
 @pytest.mark.parametrize("worker", workers, ids=worker_ids)
-async def test_map(worker: AsyncioPoolMapWorkerType[int, int]) -> None:
+async def test_map(worker: WorkerHandler) -> None:
     results: list[int] = []
     errors: list[BaseException] = []
     async with AsyncioPool(1000) as pool:
@@ -27,9 +27,7 @@ async def test_map(worker: AsyncioPoolMapWorkerType[int, int]) -> None:
 
 
 @pytest.mark.parametrize("worker", workers, ids=worker_ids)
-async def test_map_exit_with_active_tasks(
-    worker: AsyncioPoolMapWorkerType[int, int],
-) -> None:
+async def test_map_exit_with_active_tasks(worker: WorkerHandler) -> None:
     async with AsyncioPool(1000) as pool:
         futures = pool.map(worker, range(10000))
 

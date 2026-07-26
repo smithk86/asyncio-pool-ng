@@ -1,9 +1,9 @@
 import asyncio
-from collections.abc import AsyncIterator, Callable, Generator
+from collections.abc import AsyncIterator, Awaitable, Callable, Generator
 from contextlib import contextmanager
 from time import perf_counter
 
-from asyncio_pool import AsyncioPoolWorkerType
+WorkerHandler = Callable[[int], Awaitable[int]]
 
 
 async def arange(value: int) -> AsyncIterator[int]:
@@ -33,7 +33,7 @@ async def worker_return_str(n: int) -> str:
     return str(n)
 
 
-workers: list[AsyncioPoolWorkerType[int]] = [worker_return_int1, worker_return_int2]
+workers: list[WorkerHandler] = [worker_return_int1, worker_return_int2]
 worker_ids: list[str] = ["worker1", "worker2"]
 
 

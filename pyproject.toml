@@ -18,8 +18,8 @@ description = "A managed pool of coroutine functions."
 license = { file = "LICENSE" }
 name = "asyncio-pool-ng"
 readme = "README.md"
-requires-python = ">=3.11,<4"
-version = "0.8.2-dev"
+requires-python = ">=3.12,<4"
+version = "0.9.0-dev"
 
 [project.urls]
 documentation = "https://smithk86.github.io/asyncio-pool-ng"
@@ -40,7 +40,7 @@ testpaths = ["tests"]
 [tool.ruff]
 exclude = ["__pycache__", "venv", ".venv"]
 line-length = 120
-target-version = 'py311'
+target-version = 'py312'
 
 [tool.ruff.lint]
 ignore = [
