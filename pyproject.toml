@@ -4,7 +4,7 @@ requires = ["hatchling"]
 
 [dependency-groups]
 dev = ["pre-commit", "mypy", "pytest", "pytest-asyncio", "pytest-mypy"]
-docs = ["mkdocs", "mkdocs-material", "mkdocstrings[python]"]
+docs = ["zensical", "mkdocstrings-python"]
 
 [project]
 authors = [{ name = "Kyle Smith", email = "smithk86@smc3.com" }]
